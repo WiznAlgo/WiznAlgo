@@ -8,7 +8,6 @@ import { Activity, Menu, X } from "lucide-react";
 const navLinks = [
   { label: "Features", href: "#features" },
   { label: "AI Technology", href: "#ai-technology" },
-  { label: "Pricing", href: "#pricing" },
   { label: "Strategy", href: "/strategy" },
 ];
 

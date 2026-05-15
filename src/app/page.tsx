@@ -4,7 +4,6 @@ import Ticker from "@/components/landing/Ticker";
 import FeaturesSection from "@/components/landing/FeaturesSection";
 import AITechSection from "@/components/landing/AITechSection";
 import TestimonialsSection from "@/components/landing/TestimonialsSection";
-import PricingSection from "@/components/landing/PricingSection";
 import Footer from "@/components/landing/Footer";
 
 export default function Home() {
@@ -16,7 +15,6 @@ export default function Home() {
       <FeaturesSection />
       <AITechSection />
       <TestimonialsSection />
-      <PricingSection />
       <Footer />
     </>
   );

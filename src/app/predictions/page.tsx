@@ -64,6 +64,24 @@ export default function PredictionsPage() {
 
                   <ConfidenceBar value={pred.confidence} />
 
+                  {/* SL/TP Section */}
+                  {pred.signal !== "HOLD" && (
+                    <div className="grid grid-cols-3 gap-2 mt-3 bg-dark-700/30 rounded-lg p-2">
+                      <div className="text-center">
+                        <div className="text-[10px] text-gray-500">Entry</div>
+                        <div className="text-xs font-mono text-white">{pred.entryPrice}</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-[10px] text-gray-500">SL</div>
+                        <div className="text-xs font-mono text-neon-red">{pred.stopLoss}</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-[10px] text-gray-500">TP</div>
+                        <div className="text-xs font-mono text-neon-green">{pred.takeProfit}</div>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="grid grid-cols-3 gap-2 mt-3">
                     <div className="text-center">
                       <div className="text-xs text-gray-500">Trend</div>
@@ -75,8 +93,8 @@ export default function PredictionsPage() {
                       </div>
                     </div>
                     <div className="text-center">
-                      <div className="text-xs text-gray-500">Volatility</div>
-                      <div className="text-xs font-semibold text-gray-300">{pred.volatility}</div>
+                      <div className="text-xs text-gray-500">R:R</div>
+                      <div className="text-xs font-semibold text-neon-blue">{pred.riskRewardRatio}</div>
                     </div>
                     <div className="text-center">
                       <div className="text-xs text-gray-500">Move</div>

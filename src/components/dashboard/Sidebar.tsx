@@ -6,14 +6,20 @@ import { clsx } from "clsx";
 import { useMarketStore } from "@/store/market-store";
 import {
   Activity, LayoutDashboard, BarChart3, Brain,
-  BookOpen, ChevronLeft, ChevronRight,
+  BookOpen, ChevronLeft, ChevronRight, Footprints,
+  Map, History, Settings,
 } from "lucide-react";
 
 const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { href: "/predictions", icon: Brain, label: "AI Predictions" },
   { href: "/signals", icon: BarChart3, label: "AI Signals" },
+  { href: "/history", icon: History, label: "Signal History" },
+  { href: "/footprint", icon: Footprints, label: "Footprint" },
+  { href: "/bookmap", icon: Map, label: "Bookmap" },
+  { href: "/orderflow", icon: Activity, label: "Order Flow" },
   { href: "/strategy", icon: BookOpen, label: "Strategy" },
+  { href: "/settings", icon: Settings, label: "Settings" },
 ];
 
 export default function Sidebar() {
@@ -32,7 +38,7 @@ export default function Sidebar() {
         {sidebarOpen && <span className="font-bold text-white text-sm">WiznAlgo</span>}
       </div>
 
-      <nav className="flex-1 py-4 space-y-1 px-2">
+      <nav className="flex-1 py-4 space-y-1 px-2 overflow-y-auto">
         {navItems.map((item) => {
           const active = pathname === item.href;
           return (
