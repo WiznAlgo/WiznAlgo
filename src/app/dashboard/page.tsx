@@ -39,7 +39,7 @@ export default function DashboardPage() {
             Live
           </div>
         </div>
-        <TradingChart height={450} showVolume />
+        <TradingChart height={450} showVolume showVWAP />
       </div>
 
       {/* Bottom panels */}

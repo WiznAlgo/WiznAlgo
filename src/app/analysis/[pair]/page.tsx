@@ -5,10 +5,10 @@ import { useRouter } from "next/navigation";
 import TradingChart from "@/components/charts/TradingChart";
 import SignalBadge from "@/components/ui/SignalBadge";
 import ConfidenceBar from "@/components/ui/ConfidenceBar";
-import { generatePrediction, PAIRS, type AIPrediction } from "@/lib/market-data";
+import { generatePrediction, generateSignalHistory, calculateWinRate, PAIRS, type AIPrediction } from "@/lib/market-data";
 import { useMarketStore } from "@/store/market-store";
 import { clsx } from "clsx";
-import { ArrowLeft, Brain, Activity, Target, Layers, Shield, TrendingUp } from "lucide-react";
+import { ArrowLeft, Brain, Activity, Target, Layers, Shield, TrendingUp, Trophy } from "lucide-react";
 
 export default function AnalysisDetailPage({ params }: { params: Promise<{ pair: string }> }) {
   const { pair } = use(params);
@@ -28,6 +28,8 @@ export default function AnalysisDetailPage({ params }: { params: Promise<{ pair:
   }, []);
 
   const prediction: AIPrediction = useMemo(() => generatePrediction(pair), [pair, tick]);
+  const history = useMemo(() => generateSignalHistory(pair), [pair]);
+  const stats = useMemo(() => calculateWinRate(history), [history]);
 
   const narratives: Record<string, string> = {
     BUY: `Large buy-side absorption detected near support area. Price currently trading above VWAP. Bullish delta imbalance increasing significantly. Liquidity sweep detected below previous lows, suggesting smart money accumulation. Order flow shows aggressive buying with institutional footprint detected at key volume nodes. Fair value gap identified below, providing strong support. Market structure remains bullish with higher highs and higher lows intact.`,
@@ -52,12 +54,73 @@ export default function AnalysisDetailPage({ params }: { params: Promise<{ pair:
         </div>
       </div>
 
-      {/* Full Chart */}
+      {/* Full Chart with VWAP + SL/TP */}
       <div className="glass-card p-4">
-        <TradingChart height={500} showVolume pairOverride={pair} />
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-sm font-semibold text-white">
+            Chart with VWAP Bands
+            {prediction.signal !== "HOLD" && " + SL/TP Levels"}
+          </h3>
+          <div className="flex items-center gap-4 text-[10px] text-gray-500">
+            <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-[#00d4ff]" /> VWAP</span>
+            <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-[#00d4ff]/30 border-t border-dashed border-[#00d4ff]/30" /> ±1σ</span>
+            <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-[#7c3aed]/40 border-t border-dotted border-[#7c3aed]/40" /> ±2σ</span>
+            {prediction.signal !== "HOLD" && (
+              <>
+                <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-neon-green" /> TP</span>
+                <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-neon-red" /> SL</span>
+              </>
+            )}
+          </div>
+        </div>
+        <TradingChart
+          height={500}
+          showVolume
+          pairOverride={pair}
+          showVWAP
+          tpLine={prediction.signal !== "HOLD" ? prediction.takeProfit : undefined}
+          slLine={prediction.signal !== "HOLD" ? prediction.stopLoss : undefined}
+        />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      {/* SL/TP Card + Win Rate */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Trade Setup */}
+        <div className="glass-card p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <Target className="w-5 h-5 text-neon-green" />
+            <h3 className="font-bold text-white">Trade Setup</h3>
+          </div>
+          <div className="space-y-3 text-sm">
+            <div className="flex justify-between">
+              <span className="text-gray-400">Entry Price</span>
+              <span className="font-mono text-white font-bold">{prediction.entryPrice}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-400">Stop Loss</span>
+              <span className="font-mono text-neon-red font-bold">{prediction.stopLoss}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-400">Take Profit</span>
+              <span className="font-mono text-neon-green font-bold">{prediction.takeProfit}</span>
+            </div>
+            <div className="border-t border-neon-blue/10 pt-2 flex justify-between">
+              <span className="text-gray-400">Risk:Reward</span>
+              <span className="font-mono text-neon-blue font-bold">{prediction.riskRewardRatio}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-400">VWAP Basis</span>
+              <span className="text-neon-purple text-xs">{prediction.vwapBasis}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-400">Expected Move</span>
+              <span className={clsx("font-mono", prediction.expectedMove.startsWith("+") ? "text-neon-green" : "text-neon-red")}>
+                {prediction.expectedMove}
+              </span>
+            </div>
+          </div>
+        </div>
+
         {/* AI Market Narrative */}
         <div className="glass-card p-5">
           <div className="flex items-center gap-2 mb-4">
@@ -67,7 +130,43 @@ export default function AnalysisDetailPage({ params }: { params: Promise<{ pair:
           <p className="text-sm text-gray-300 leading-relaxed">{narratives[prediction.signal]}</p>
         </div>
 
-        {/* Institutional Analysis */}
+        {/* Win Rate for this pair */}
+        <div className="glass-card p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <Trophy className="w-5 h-5 text-neon-yellow" />
+            <h3 className="font-bold text-white">{pair} Win Rate</h3>
+          </div>
+          <div className="space-y-3 text-sm">
+            <div className="flex justify-between">
+              <span className="text-gray-400">Win Rate</span>
+              <span className={clsx("font-bold", stats.winRate >= 60 ? "text-neon-green" : "text-neon-yellow")}>{stats.winRate}%</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-400">Wins / Losses</span>
+              <span><span className="text-neon-green font-bold">{stats.wins}</span> / <span className="text-neon-red font-bold">{stats.losses}</span></span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-400">Active Signals</span>
+              <span className="text-neon-blue font-bold">{stats.active}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-400">Avg Win</span>
+              <span className="text-neon-green font-mono">+{stats.avgWin}%</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-400">Avg Loss</span>
+              <span className="text-neon-red font-mono">-{stats.avgLoss}%</span>
+            </div>
+            <div className="flex justify-between border-t border-neon-blue/10 pt-2">
+              <span className="text-gray-400">Profit Factor</span>
+              <span className={clsx("font-bold", stats.profitFactor >= 1.5 ? "text-neon-green" : "text-neon-yellow")}>{stats.profitFactor}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Institutional Analysis + More */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="glass-card p-5">
           <div className="flex items-center gap-2 mb-4">
             <Shield className="w-5 h-5 text-neon-blue" />
@@ -88,8 +187,26 @@ export default function AnalysisDetailPage({ params }: { params: Promise<{ pair:
             <ConfidenceBar value={prediction.liquidityHeat} label="Liquidity Heat Index" />
             <div className="flex items-center justify-between text-sm">
               <span className="text-gray-400">Risk/Reward</span>
-              <span className="text-white font-mono">{prediction.riskLevel === "Low" ? "3.2:1" : prediction.riskLevel === "Medium" ? "2.1:1" : "1.4:1"}</span>
+              <span className="text-white font-mono">{prediction.riskRewardRatio}</span>
             </div>
+          </div>
+        </div>
+
+        {/* Detailed AI Reasoning */}
+        <div className="glass-card p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <TrendingUp className="w-5 h-5 text-neon-blue" />
+            <h3 className="font-bold text-white">Detailed AI Reasoning</h3>
+          </div>
+          <div className="space-y-2">
+            {prediction.reasons.map((reason, i) => (
+              <div key={i} className="flex items-start gap-3 bg-dark-700/30 rounded-lg p-3">
+                <span className="w-6 h-6 rounded-full bg-neon-blue/10 text-neon-blue text-xs flex items-center justify-center shrink-0 mt-0.5">
+                  {i + 1}
+                </span>
+                <span className="text-sm text-gray-300">{reason}</span>
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -138,24 +255,6 @@ export default function AnalysisDetailPage({ params }: { params: Promise<{ pair:
             <div className="flex justify-between"><span className="text-gray-400">CHoCH</span><span className="text-gray-400">Not Detected</span></div>
             <div className="flex justify-between"><span className="text-gray-400">Premium/Discount</span><span className="text-neon-green">{prediction.signal === "BUY" ? "Discount Zone" : "Premium Zone"}</span></div>
           </div>
-        </div>
-      </div>
-
-      {/* AI Reasoning Detail */}
-      <div className="glass-card p-5">
-        <div className="flex items-center gap-2 mb-4">
-          <TrendingUp className="w-5 h-5 text-neon-blue" />
-          <h3 className="font-bold text-white">Detailed AI Reasoning</h3>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {prediction.reasons.map((reason, i) => (
-            <div key={i} className="flex items-start gap-3 bg-dark-700/30 rounded-lg p-3">
-              <span className="w-6 h-6 rounded-full bg-neon-blue/10 text-neon-blue text-xs flex items-center justify-center shrink-0 mt-0.5">
-                {i + 1}
-              </span>
-              <span className="text-sm text-gray-300">{reason}</span>
-            </div>
-          ))}
         </div>
       </div>
     </div>

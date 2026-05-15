@@ -8,10 +8,12 @@ import {
   type CandlestickData,
   type Time,
   type HistogramData,
+  type LineData,
   CandlestickSeries,
   HistogramSeries,
+  LineSeries,
 } from "lightweight-charts";
-import { generateCandles } from "@/lib/market-data";
+import { generateCandles, computeVWAPBands } from "@/lib/market-data";
 import { useMarketStore } from "@/store/market-store";
 
 interface TradingChartProps {
@@ -19,9 +21,20 @@ interface TradingChartProps {
   showVolume?: boolean;
   mini?: boolean;
   pairOverride?: string;
+  showVWAP?: boolean;
+  slLine?: number;
+  tpLine?: number;
 }
 
-export default function TradingChart({ height = 500, showVolume = true, mini = false, pairOverride }: TradingChartProps) {
+export default function TradingChart({
+  height = 500,
+  showVolume = true,
+  mini = false,
+  pairOverride,
+  showVWAP = false,
+  slLine,
+  tpLine,
+}: TradingChartProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const { selectedPair, selectedTimeframe } = useMarketStore();
@@ -96,9 +109,81 @@ export default function TradingChart({ height = 500, showVolume = true, mini = f
       volumeSeries.setData(volData);
     }
 
+    if (showVWAP && !mini) {
+      const bands = computeVWAPBands(candles);
+
+      const vwapSeries = chart.addSeries(LineSeries, {
+        color: "#00d4ff",
+        lineWidth: 2,
+        priceLineVisible: false,
+        lastValueVisible: false,
+      });
+      vwapSeries.setData(bands.vwap.map((d) => ({ time: d.time as Time, value: d.value })) as LineData<Time>[]);
+
+      const u1Series = chart.addSeries(LineSeries, {
+        color: "rgba(0, 212, 255, 0.3)",
+        lineWidth: 1,
+        lineStyle: 2,
+        priceLineVisible: false,
+        lastValueVisible: false,
+      });
+      u1Series.setData(bands.upper1.map((d) => ({ time: d.time as Time, value: d.value })) as LineData<Time>[]);
+
+      const l1Series = chart.addSeries(LineSeries, {
+        color: "rgba(0, 212, 255, 0.3)",
+        lineWidth: 1,
+        lineStyle: 2,
+        priceLineVisible: false,
+        lastValueVisible: false,
+      });
+      l1Series.setData(bands.lower1.map((d) => ({ time: d.time as Time, value: d.value })) as LineData<Time>[]);
+
+      const u2Series = chart.addSeries(LineSeries, {
+        color: "rgba(124, 58, 237, 0.4)",
+        lineWidth: 1,
+        lineStyle: 3,
+        priceLineVisible: false,
+        lastValueVisible: false,
+      });
+      u2Series.setData(bands.upper2.map((d) => ({ time: d.time as Time, value: d.value })) as LineData<Time>[]);
+
+      const l2Series = chart.addSeries(LineSeries, {
+        color: "rgba(124, 58, 237, 0.4)",
+        lineWidth: 1,
+        lineStyle: 3,
+        priceLineVisible: false,
+        lastValueVisible: false,
+      });
+      l2Series.setData(bands.lower2.map((d) => ({ time: d.time as Time, value: d.value })) as LineData<Time>[]);
+    }
+
+    if (tpLine != null) {
+      const tpSeries = chart.addSeries(LineSeries, {
+        color: "#00ff88",
+        lineWidth: 2,
+        lineStyle: 2,
+        priceLineVisible: false,
+        lastValueVisible: true,
+        title: "TP",
+      });
+      tpSeries.setData(candles.map((c) => ({ time: c.time as Time, value: tpLine })) as LineData<Time>[]);
+    }
+
+    if (slLine != null) {
+      const slSeries = chart.addSeries(LineSeries, {
+        color: "#ff3b5c",
+        lineWidth: 2,
+        lineStyle: 2,
+        priceLineVisible: false,
+        lastValueVisible: true,
+        title: "SL",
+      });
+      slSeries.setData(candles.map((c) => ({ time: c.time as Time, value: slLine })) as LineData<Time>[]);
+    }
+
     chart.timeScale().fitContent();
     chartRef.current = chart;
-  }, [pair, selectedTimeframe, height, showVolume, mini]);
+  }, [pair, selectedTimeframe, height, showVolume, mini, showVWAP, slLine, tpLine]);
 
   useEffect(() => {
     initChart();
