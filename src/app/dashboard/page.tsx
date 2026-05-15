@@ -4,13 +4,17 @@ import { useEffect, useState, useMemo } from "react";
 import TradingChart from "@/components/charts/TradingChart";
 import { useMarketStore } from "@/store/market-store";
 import { generatePrediction, generateVolumeProfile, PAIRS, type AIPrediction } from "@/lib/market-data";
+import { isBinanceSupported, useBinanceKline } from "@/lib/binance-ws";
 import SignalBadge from "@/components/ui/SignalBadge";
 import { clsx } from "clsx";
-import { TrendingUp, TrendingDown, BarChart3, Activity, Layers } from "lucide-react";
+import { TrendingUp, TrendingDown, BarChart3, Activity, Layers, Wifi, WifiOff } from "lucide-react";
 
 export default function DashboardPage() {
-  const { selectedPair, watchlist } = useMarketStore();
+  const { selectedPair, selectedTimeframe, watchlist } = useMarketStore();
   const [tick, setTick] = useState(0);
+
+  const isLive = isBinanceSupported(selectedPair);
+  const { candles: liveCandles, connected, price: livePrice } = useBinanceKline(selectedPair, selectedTimeframe);
 
   useEffect(() => {
     const id = setInterval(() => setTick((t) => t + 1), 8000);
@@ -33,13 +37,39 @@ export default function DashboardPage() {
           <div className="flex items-center gap-3">
             <h2 className="text-lg font-bold text-white">{selectedPair}</h2>
             {prediction && <SignalBadge signal={prediction.signal} size="sm" />}
+            {isLive && livePrice && (
+              <span className="text-sm font-mono text-neon-yellow">${livePrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            )}
           </div>
-          <div className="flex items-center gap-2 text-xs text-gray-500">
-            <span className="w-2 h-2 bg-neon-green rounded-full animate-pulse" />
-            Live
+          <div className="flex items-center gap-2 text-xs">
+            {isLive ? (
+              <div className="flex items-center gap-1.5">
+                {connected ? (
+                  <>
+                    <Wifi className="w-3.5 h-3.5 text-neon-green" />
+                    <span className="text-neon-green">Binance Live</span>
+                  </>
+                ) : (
+                  <>
+                    <WifiOff className="w-3.5 h-3.5 text-neon-yellow" />
+                    <span className="text-neon-yellow">Connecting...</span>
+                  </>
+                )}
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5 text-gray-500">
+                <span className="w-2 h-2 bg-neon-blue rounded-full animate-pulse" />
+                <span>Simulated</span>
+              </div>
+            )}
           </div>
         </div>
-        <TradingChart height={450} showVolume showVWAP />
+        <TradingChart
+          height={450}
+          showVolume
+          showVWAP
+          liveCandles={isLive && liveCandles.length > 0 ? liveCandles : undefined}
+        />
       </div>
 
       {/* Bottom panels */}

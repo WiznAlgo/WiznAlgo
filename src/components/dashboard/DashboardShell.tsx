@@ -3,6 +3,7 @@
 import Sidebar from "@/components/dashboard/Sidebar";
 import TopBar from "@/components/dashboard/TopBar";
 import AIPanel from "@/components/dashboard/AIPanel";
+import SignalNotifier from "@/components/SignalNotifier";
 import { useMarketStore } from "@/store/market-store";
 import { clsx } from "clsx";
 
@@ -14,6 +15,7 @@ export default function DashboardShell({ children }: { children: React.ReactNode
       <Sidebar />
       <TopBar />
       <AIPanel />
+      <SignalNotifier />
       <main
         className={clsx(
           "pt-14 transition-all duration-300",

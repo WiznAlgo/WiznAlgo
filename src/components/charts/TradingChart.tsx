@@ -13,7 +13,7 @@ import {
   HistogramSeries,
   LineSeries,
 } from "lightweight-charts";
-import { generateCandles, computeVWAPBands } from "@/lib/market-data";
+import { generateCandles, computeVWAPBands, type CandleData } from "@/lib/market-data";
 import { useMarketStore } from "@/store/market-store";
 
 interface TradingChartProps {
@@ -24,6 +24,7 @@ interface TradingChartProps {
   showVWAP?: boolean;
   slLine?: number;
   tpLine?: number;
+  liveCandles?: CandleData[];
 }
 
 export default function TradingChart({
@@ -34,6 +35,7 @@ export default function TradingChart({
   showVWAP = false,
   slLine,
   tpLine,
+  liveCandles,
 }: TradingChartProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
@@ -83,7 +85,10 @@ export default function TradingChart({
       wickDownColor: "#ff3b5c",
     });
 
-    const candles = generateCandles(pair, mini ? 50 : 200, selectedTimeframe);
+    const candles = liveCandles && liveCandles.length > 0
+      ? liveCandles
+      : generateCandles(pair, mini ? 50 : 200, selectedTimeframe);
+
     const candleData: CandlestickData<Time>[] = candles.map((c) => ({
       time: c.time as Time,
       open: c.open,
@@ -183,7 +188,7 @@ export default function TradingChart({
 
     chart.timeScale().fitContent();
     chartRef.current = chart;
-  }, [pair, selectedTimeframe, height, showVolume, mini, showVWAP, slLine, tpLine]);
+  }, [pair, selectedTimeframe, height, showVolume, mini, showVWAP, slLine, tpLine, liveCandles]);
 
   useEffect(() => {
     initChart();

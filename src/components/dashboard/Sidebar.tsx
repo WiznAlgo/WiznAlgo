@@ -7,7 +7,7 @@ import { useMarketStore } from "@/store/market-store";
 import {
   Activity, LayoutDashboard, BarChart3, Brain,
   BookOpen, ChevronLeft, ChevronRight, Footprints,
-  Map, History,
+  Map, History, Settings,
 } from "lucide-react";
 
 const navItems = [
@@ -19,6 +19,7 @@ const navItems = [
   { href: "/bookmap", icon: Map, label: "Bookmap" },
   { href: "/orderflow", icon: Activity, label: "Order Flow" },
   { href: "/strategy", icon: BookOpen, label: "Strategy" },
+  { href: "/settings", icon: Settings, label: "Settings" },
 ];
 
 export default function Sidebar() {
