@@ -1,36 +1,178 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Market Analysis WiznAlgo
+
+Institutional-grade AI-powered market analysis platform. Real-time order flow, smart money analytics, VWAP, volume profile, and predictive analytics for professional traders.
+
+## Features
+
+- **TradingView-style Charts** — Real-time candlestick charts with volume, crosshair, zoom, and multi-timeframe support
+- **AI Prediction Engine** — LSTM & Transformer-based directional forecasting with confidence scores
+- **Order Flow Analysis** — Aggressive buyer/seller detection, bid/ask imbalance, delta volume
+- **VWAP Analytics** — Institutional bias, mean reversion, premium/discount zones
+- **Volume Profile** — HVN/LVN detection, point of control, value area
+- **Absorption Detection** — Hidden institutional order identification at key levels
+- **Liquidity Detection** — Stop-loss cluster mapping and liquidity pool tracking
+- **Smart Money Concept** — Order blocks, breaker blocks, fair value gaps, BOS/CHoCH
+- **Multi-Pair AI Scanner** — Real-time signal table with sortable columns and filtering
+- **Mini Chart Grid** — AI predictions with confidence scores for all pairs
+
+## Pages
+
+| Page | Route | Description |
+|------|-------|-------------|
+| Landing | `/` | Premium landing page with hero, features, pricing, testimonials |
+| Dashboard | `/dashboard` | Main trading dashboard with chart, order flow, volume profile, watchlist |
+| AI Predictions | `/predictions` | Grid of mini charts with AI prediction cards |
+| AI Signals | `/signals` | Sortable/filterable signal scanner table |
+| Analysis Detail | `/analysis/[pair]` | Deep AI analysis with narrative, institutional analysis, liquidity map |
+| Strategy | `/strategy` | Trading strategy explanations with algorithm formulas |
+
+## Tech Stack
+
+### Frontend
+- **Next.js 16** (App Router)
+- **React 19**
+- **TailwindCSS 4**
+- **Framer Motion** — Smooth animations
+- **Lightweight Charts** — TradingView charting library
+- **Zustand** — State management
+- **Lucide React** — Icons
+
+### Planned Backend
+- Node.js / FastAPI
+- Python AI Engine (TensorFlow/PyTorch)
+- WebSocket server for real-time data
+- Redis caching
+- PostgreSQL database
+
+### Planned AI/ML
+- LSTM networks for temporal pattern recognition
+- Transformer models for cross-asset correlation
+- Reinforcement Learning for adaptive strategies
+- Time-series analysis and feature engineering
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+- Node.js 20+ (recommended: 22.x)
+- npm 10+
+
+### Installation
 
 ```bash
+# Clone the repository
+git clone https://github.com/WiznAlgo/WiznAlgo.git
+cd WiznAlgo
+
+# Install dependencies
+npm install
+
+# Copy environment variables
+cp .env.example .env.local
+
+# Start development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Build for Production
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+npm start
+```
 
-## Learn More
+### Deploy to Vercel
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npx vercel
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Project Structure
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+src/
+├── app/                    # Next.js App Router pages
+│   ├── page.tsx           # Landing page
+│   ├── layout.tsx         # Root layout
+│   ├── globals.css        # Global styles & theme
+│   ├── dashboard/         # Main trading dashboard
+│   ├── predictions/       # AI prediction grid
+│   ├── signals/           # AI signal scanner
+│   ├── analysis/[pair]/   # Detailed AI analysis
+│   └── strategy/          # Strategy explanations
+├── components/
+│   ├── landing/           # Landing page components
+│   │   ├── Navbar.tsx
+│   │   ├── HeroSection.tsx
+│   │   ├── Ticker.tsx
+│   │   ├── FeaturesSection.tsx
+│   │   ├── AITechSection.tsx
+│   │   ├── PricingSection.tsx
+│   │   ├── TestimonialsSection.tsx
+│   │   └── Footer.tsx
+│   ├── dashboard/         # Dashboard layout components
+│   │   ├── DashboardShell.tsx
+│   │   ├── Sidebar.tsx
+│   │   ├── TopBar.tsx
+│   │   └── AIPanel.tsx
+│   ├── charts/            # Chart components
+│   │   └── TradingChart.tsx
+│   └── ui/                # Shared UI components
+│       ├── GlassCard.tsx
+│       ├── SignalBadge.tsx
+│       └── ConfidenceBar.tsx
+├── lib/                   # Utilities & data
+│   └── market-data.ts     # Mock data generation
+└── store/                 # State management
+    └── market-store.ts    # Zustand store
+```
 
-## Deploy on Vercel
+## Design
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **Dark mode premium** with glassmorphism effects
+- **Color palette**: Black, Neon Blue (#00d4ff), Purple (#7c3aed), Green (#00ff88) for bullish, Red (#ff3b5c) for bearish
+- **Responsive**: Mobile & desktop layouts
+- **Animations**: Framer Motion transitions and hover effects
+- **Grid background**: Subtle futuristic grid pattern
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Supported Pairs
+
+| Category | Pairs |
+|----------|-------|
+| Crypto | BTCUSD, ETHUSD |
+| Forex | EURUSD, GBPUSD, USDJPY |
+| Indices | US30, NAS100, SPX500 |
+| Commodities | XAUUSD |
+
+## Algorithm Reference
+
+### VWAP
+```
+VWAP = Σ(Price × Volume) / Σ(Volume)
+```
+
+### Order Flow Imbalance
+```
+Imbalance = (BuyVolume - SellVolume) / TotalVolume
+```
+
+### Absorption Detection
+```
+IF (Volume > 2σ) AND (|ΔPrice| < 0.5σ) → Absorption Detected
+```
+
+### Volume Profile
+```
+VP[price] = Σ Volume(candles where Low ≤ price ≤ High)
+```
+
+### AI Prediction
+```
+Signal = Transformer(LSTM(VWAP_dev, Delta, Absorption, Liquidity, Momentum, VP))
+Output: BUY / SELL / HOLD + Confidence Score
+```
+
+## License
+
+MIT
